@@ -1,18 +1,21 @@
-var map        = require('map-async')
+var extend     = require('xtend')
+  , map        = require('map-async')
   , marked     = require('marked')
   , pygmentize = require('pygmentize-bundled')
 
   , codeCache  = {}
 
-function Processor (source) {
+function Processor (source, options) {
   this.source = source
   this.blocks = []
-  marked.setOptions({
+
+  options = extend(options, {
       gfm: true
     , pedantic: false
     , sanitize: false
     , highlight: this.highlight.bind(this)
   })
+  marked.setOptions(options)
 }
 
 Processor.prototype.highlight = function(code, lang) {
@@ -49,6 +52,10 @@ Processor.prototype.process = function (callback) {
   return this
 }
 
-module.exports = function (input, callback) {
-  new Processor(input).process(callback)
+module.exports = function (input, options, callback) {
+  if (!callback) {
+    callback = options
+    options = {}
+  }
+  new Processor(input, options).process(callback)
 }
